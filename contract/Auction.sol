@@ -186,7 +186,14 @@ contract Auction {
     // begin bid now and pay over time
     function bidNowAndPayOverTime(uint256 _bid, uint256 _partPayment) internal {
         Bid storage b = bids[msg.sender];
-        require(_bid + b.bidAmount >= minPrice, "bid >= price");
+        require(_partPayment > 0, "_partPayment  < 0");
+        require(auctionState == AuctionState.BIDDING, "Auction not BIDDING");
+        require(_bid > 0, "Bid not > 0");
+        require(getAllowance(msg.sender) > _bid, "Insufficient allowance");
+        require(
+            _bid < paymentToken.balanceOf(msg.sender),
+            "Insufficient balance"
+        );
         
         paymentToken.transferFrom(msg.sender, address(this),_partPayment);
         if (!hasBidded(msg.sender)) {
